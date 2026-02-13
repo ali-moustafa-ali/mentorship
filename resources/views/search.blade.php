@@ -41,7 +41,7 @@
             <div class="empty-icon">🔍</div>
             <h3>لا توجد نتائج</h3>
             <p>لم يتم العثور على مواضيع تطابق "{{ $query }}"</p>
-            <a href="{{ route('topics.create', ['title' => $query]) }}" class="btn btn-primary">✏️ أنشئ موضوع "{{ $query }}"</a>
+            <a href="{{ route('topics.create', ['title' => $query, 'domain' => session('current_domain', 'flutter')]) }}" class="btn btn-primary">✏️ أنشئ موضوع "{{ $query }}"</a>
         </div>
     @endforelse
 @endif

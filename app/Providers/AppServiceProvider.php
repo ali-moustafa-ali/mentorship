@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,17 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        // This app is deployed behind a reverse proxy under a subpath (/mentor).
+        // Nginx strips the /mentor prefix before forwarding, so the upstream request
+        // cannot infer the public base URL. Force URL generation to use APP_URL.
+        $rootUrl = config('app.url');
+        if (is_string($rootUrl) && $rootUrl !== '') {
+            URL::forceRootUrl(rtrim($rootUrl, '/'));
+
+            $scheme = parse_url($rootUrl, PHP_URL_SCHEME);
+            if (is_string($scheme) && $scheme !== '') {
+                URL::forceScheme($scheme);
+            }
+        }
     }
 }

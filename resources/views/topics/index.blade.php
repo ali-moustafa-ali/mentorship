@@ -11,7 +11,7 @@
             <div class="subtitle">تاق: {{ request('tag') }}</div>
         @endif
     </div>
-    <a href="{{ route('topics.create') }}" class="btn btn-primary">✏️ موضوع جديد</a>
+    <a href="{{ route('topics.create', ['domain' => $currentDomain->slug]) }}" class="btn btn-primary">✏️ موضوع جديد</a>
 </div>
 
 <div class="stats-bar">
@@ -77,7 +77,7 @@
         <div class="empty-icon">📖</div>
         <h3>لا يوجد مواضيع بعد</h3>
         <p>ابدأ بإنشاء أول موضوع لتبني قاعدة معرفتك</p>
-        <a href="{{ route('topics.create') }}" class="btn btn-primary">✏️ أنشئ موضوع</a>
+        <a href="{{ route('topics.create', ['domain' => $currentDomain->slug]) }}" class="btn btn-primary">✏️ أنشئ موضوع</a>
     </div>
 @endif
 
