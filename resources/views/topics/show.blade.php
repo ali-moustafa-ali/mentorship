@@ -45,7 +45,7 @@
 
 <div class="topic-content">
     <div class="topic-body">
-        {!! $topic->rendered_body !!}
+        {!! str_replace(['<p>Code Overview</p>', '<p>Code overview</p>', '<p>code overview</p>'], '<div class=\"preformatted\">Code Overview</div>', $topic->rendered_body) !!}
     </div>
 </div>
 
