@@ -952,8 +952,14 @@
 <body>
 
 	    <aside class="sidebar">
+	        @php
+	            // route('topics.index', [...]) generates ".../mentor?x=y" (no trailing slash) because the route URI is "/".
+	            // nginx redirects "/mentor" -> "/mentor/" and drops the query string, breaking domain switching/filters.
+	            // Build index URLs explicitly as ".../mentor/?..." to preserve query reliably.
+	            $indexBaseUrl = rtrim(config('app.url'), '/') . '/';
+	        @endphp
 	        <div class="sidebar-header">
-	            <a href="{{ session('current_domain') ? route('topics.index', ['domain' => session('current_domain')]) : route('topics.index') }}" class="sidebar-logo">
+	            <a href="{{ session('current_domain') ? ($indexBaseUrl . '?' . http_build_query(['domain' => session('current_domain')])) : $indexBaseUrl }}" class="sidebar-logo">
 	                <div class="logo-icon">📘</div>
 	                <h1>{{ isset($currentDomain) ? $currentDomain->name : 'Home' }} Wiki</h1>
 	            </a>
@@ -979,7 +985,7 @@
 
 	        <div class="domain-switcher">
 	            @foreach($globalDomains as $domain)
-	                <a href="{{ route('topics.index', ['domain' => $domain->slug]) }}" 
+	                <a href="{{ $indexBaseUrl . '?' . http_build_query(['domain' => $domain->slug]) }}" 
 	                   class="domain-item {{ $currDomainId && $currDomainId == $domain->id ? 'active' : '' }}"
 	                   style="--domain-color: {{ $domain->color }}">
 	                   <span class="domain-icon">{{ $domain->icon }}</span>
@@ -990,7 +996,7 @@
 
 	        <nav class="sidebar-nav">
 	            <div class="sidebar-nav-title">التنقل</div>
-	            <a href="{{ session('current_domain') ? route('topics.index', ['domain' => session('current_domain')]) : route('topics.index') }}" class="{{ request()->routeIs('topics.index') && !request('category') && !request('tag') ? 'active' : '' }}">
+	            <a href="{{ session('current_domain') ? ($indexBaseUrl . '?' . http_build_query(['domain' => session('current_domain')])) : $indexBaseUrl }}" class="{{ request()->routeIs('topics.index') && !request('category') && !request('tag') ? 'active' : '' }}">
 	                <span class="nav-icon">🏠</span> كل المواضيع
 	            </a>
 	            @if(session('current_domain'))
@@ -1030,7 +1036,7 @@
 	            <div class="sidebar-tags">
 	                <div class="sidebar-nav-title">التصنيفات</div>
 	                @foreach($categories as $cat)
-	                    <a href="{{ route('topics.index', ['category' => $cat, 'domain' => (session('current_domain') ?? 'flutter')]) }}"
+	                    <a href="{{ $indexBaseUrl . '?' . http_build_query(['category' => $cat, 'domain' => (session('current_domain') ?? 'flutter')]) }}"
 	                       class="category-tag {{ request('category') === $cat ? 'active' : '' }}">{{ $cat }}</a>
 	                @endforeach
 	            </div>
@@ -1040,7 +1046,7 @@
 	            <div class="sidebar-tags">
 	                <div class="sidebar-nav-title">التاقات</div>
 	                @foreach($tags as $tag)
-	                    <a href="{{ route('topics.index', ['tag' => $tag->slug, 'domain' => (session('current_domain') ?? 'flutter')]) }}"
+	                    <a href="{{ $indexBaseUrl . '?' . http_build_query(['tag' => $tag->slug, 'domain' => (session('current_domain') ?? 'flutter')]) }}"
 	                       class="tag-pill {{ request('tag') === $tag->slug ? 'active' : '' }}"
 	                       style="border-color: {{ $tag->color }}; {{ request('tag') === $tag->slug ? 'background:' . $tag->color . '; color:#fff;' : '' }}">
 	                        {{ $tag->name }}

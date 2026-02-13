@@ -4,6 +4,7 @@
 
 @php
     $domainSlug = request('domain', session('current_domain'));
+    $indexBaseUrl = rtrim(config('app.url'), '/') . '/';
 @endphp
 
 <div class="page-header">
@@ -11,7 +12,7 @@
         <h2>🕸️ خريطة المعرفة</h2>
         <div class="subtitle">عرض بصري لكل المواضيع والروابط بينها</div>
     </div>
-    <a href="{{ route('topics.index', ['domain' => $domainSlug]) }}" class="btn btn-secondary">→ رجوع</a>
+    <a href="{{ $domainSlug ? ($indexBaseUrl . '?' . http_build_query(['domain' => $domainSlug])) : $indexBaseUrl }}" class="btn btn-secondary">→ رجوع</a>
 </div>
 
 <div id="graph-container" style="

@@ -2,12 +2,16 @@
 @section('title', 'موضوع جديد')
 @section('content')
 
+@php
+    $indexBaseUrl = rtrim(config('app.url'), '/') . '/';
+@endphp
+
 <div class="page-header">
     <div>
         <h2>✏️ موضوع جديد</h2>
         <div class="subtitle">أضف معرفة جديدة لقاعدة البيانات</div>
     </div>
-    <a href="{{ route('topics.index', ['domain' => $domain->slug]) }}" class="btn btn-secondary">→ رجوع</a>
+    <a href="{{ $indexBaseUrl . '?' . http_build_query(['domain' => $domain->slug]) }}" class="btn btn-secondary">→ رجوع</a>
 </div>
 
 <form action="{{ route('topics.store', ['domain' => $domain->slug]) }}" method="POST">

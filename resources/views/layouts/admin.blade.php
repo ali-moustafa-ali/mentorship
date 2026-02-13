@@ -197,7 +197,8 @@
             
             <div class="divider"></div>
 
-            <a href="{{ session('current_domain') ? route('topics.index', ['domain' => session('current_domain')]) : route('topics.index') }}">
+            @php $indexBaseUrl = rtrim(config('app.url'), '/') . '/'; @endphp
+            <a href="{{ session('current_domain') ? ($indexBaseUrl . '?' . http_build_query(['domain' => session('current_domain')])) : $indexBaseUrl }}">
                 <span class="nav-icon">🏠</span> العودة للموقع
             </a>
         </nav>

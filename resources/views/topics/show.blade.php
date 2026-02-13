@@ -4,6 +4,7 @@
 
 @php
     $domainSlug = request('domain', session('current_domain', $topic->domain?->slug ?? 'flutter'));
+    $indexBaseUrl = rtrim(config('app.url'), '/') . '/';
 @endphp
 
 <div class="page-header">
@@ -37,7 +38,7 @@
 @if($topic->tags->count())
     <div style="margin-bottom: 16px;">
         @foreach($topic->tags as $tag)
-            <a href="{{ route('topics.index', ['tag' => $tag->slug, 'domain' => $domainSlug]) }}" class="tag-pill" style="--tag-color: {{ $tag->color }};">{{ $tag->name }}</a>
+            <a href="{{ $indexBaseUrl . '?' . http_build_query(['tag' => $tag->slug, 'domain' => $domainSlug]) }}" class="tag-pill" style="--tag-color: {{ $tag->color }};">{{ $tag->name }}</a>
         @endforeach
     </div>
 @endif
