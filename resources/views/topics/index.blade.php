@@ -50,7 +50,7 @@
 @if($topics->count())
     <div class="topics-grid">
         @foreach($topics as $topic)
-            <a href="{{ route('topics.show', $topic) }}" class="topic-card">
+            <a href="{{ route('topics.show', [$topic, 'domain' => $currentDomain->slug]) }}" class="topic-card">
                 <div class="card-top">
                     <h3>{{ $topic->title }}</h3>
                     @if($topic->is_pinned)

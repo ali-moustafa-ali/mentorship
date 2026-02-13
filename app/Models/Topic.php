@@ -68,19 +68,34 @@ class Topic extends Model
     public function getRenderedBodyAttribute(): string
     {
         $body = $this->body;
+        $domainId = $this->domain_id;
+        $domainSlug = $this->domain?->slug;
 
         // 1. Convert [[Topic Name]] to markdown links BEFORE markdown parsing
         $body = preg_replace_callback(
             '/\[\[([^\]]+)\]\]/',
-            function ($matches) {
+            function ($matches) use ($domainId, $domainSlug) {
                 $topicName = $matches[1];
                 $slug = Str::slug($topicName);
-                $exists = static::where('slug', $slug)->exists();
+                $existsQuery = static::where('slug', $slug);
+                if ($domainId) {
+                    $existsQuery->where('domain_id', $domainId);
+                }
+                $exists = $existsQuery->exists();
+
                 if ($exists) {
-                    $url = route('topics.show', $slug);
+                    $params = [$slug];
+                    if ($domainSlug) {
+                        $params['domain'] = $domainSlug;
+                    }
+                    $url = route('topics.show', $params);
                     return '[' . $topicName . '](' . $url . '){.wiki-link}';
                 } else {
-                    $url = route('topics.create', ['title' => $topicName]);
+                    $params = ['title' => $topicName];
+                    if ($domainSlug) {
+                        $params['domain'] = $domainSlug;
+                    }
+                    $url = route('topics.create', $params);
                     return '[' . $topicName . '](' . $url . '){.wiki-link .wiki-link-missing}';
                 }
             },
@@ -106,9 +121,9 @@ class Topic extends Model
         $html = str_replace('{.wiki-link}', '', $html);
         $html = str_replace('{.wiki-link .wiki-link-missing}', '', $html);
 
-        // Add wiki-link class to our special links
+        // Add wiki-link class to topic links (including absolute URLs under /mentor).
         $html = preg_replace_callback(
-            '/<a href="(\/topics\/[^"]*)">(.*?)<\/a>/',
+            '/<a href="([^"]*\/topics\/[^"]*)">(.*?)<\/a>/',
             function ($matches) {
                 $url = $matches[1];
                 $text = $matches[2];
@@ -168,6 +183,7 @@ class Topic extends Model
     {
         $pattern = '[[' . $this->title . ']]';
         return static::where('body', 'LIKE', '%' . $pattern . '%')
+            ->when($this->domain_id, fn($q) => $q->where('domain_id', $this->domain_id))
             ->where('id', '!=', $this->id)
             ->get();
     }
@@ -176,8 +192,10 @@ class Topic extends Model
 
     public function scopeSearch($query, string $term)
     {
-        return $query->where('title', 'LIKE', "%{$term}%")
-            ->orWhere('body', 'LIKE', "%{$term}%");
+        return $query->where(function ($q) use ($term) {
+            $q->where('title', 'LIKE', "%{$term}%")
+              ->orWhere('body', 'LIKE', "%{$term}%");
+        });
     }
 
     public function scopePinned($query)

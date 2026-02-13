@@ -2,12 +2,16 @@
 @section('title', 'خريطة المعرفة')
 @section('content')
 
+@php
+    $domainSlug = request('domain', session('current_domain', 'flutter'));
+@endphp
+
 <div class="page-header">
     <div>
         <h2>🕸️ خريطة المعرفة</h2>
         <div class="subtitle">عرض بصري لكل المواضيع والروابط بينها</div>
     </div>
-    <a href="{{ route('topics.index') }}" class="btn btn-secondary">→ رجوع</a>
+    <a href="{{ route('topics.index', ['domain' => $domainSlug]) }}" class="btn btn-secondary">→ رجوع</a>
 </div>
 
 <div id="graph-container" style="

@@ -951,21 +951,22 @@
 </head>
 <body>
 
-    <aside class="sidebar">
-        <div class="sidebar-header">
-            <a href="{{ route('topics.index') }}" class="sidebar-logo">
-                <div class="logo-icon">📘</div>
-                <h1>{{ isset($currentDomain) ? $currentDomain->name : 'Home' }} Wiki</h1>
-            </a>
-            <button class="theme-toggle" onclick="toggleTheme()" title="تبديل الوضع">🌙</button>
-        </div>
+	    <aside class="sidebar">
+	        <div class="sidebar-header">
+	            <a href="{{ route('topics.index', ['domain' => session('current_domain', 'flutter')]) }}" class="sidebar-logo">
+	                <div class="logo-icon">📘</div>
+	                <h1>{{ isset($currentDomain) ? $currentDomain->name : 'Home' }} Wiki</h1>
+	            </a>
+	            <button class="theme-toggle" onclick="toggleTheme()" title="تبديل الوضع">🌙</button>
+	        </div>
 
-        <form action="{{ route('search') }}" method="GET" class="sidebar-search">
-            <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-            <input type="text" name="q" placeholder="ابحث في المواضيع..." value="{{ request('q') }}">
-        </form>
+	        <form action="{{ route('search') }}" method="GET" class="sidebar-search">
+	            <input type="hidden" name="domain" value="{{ session('current_domain', 'flutter') }}">
+	            <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+	                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+	            </svg>
+	            <input type="text" name="q" placeholder="ابحث في المواضيع..." value="{{ request('q') }}">
+	        </form>
 
         @php
             $globalDomains = isset($domains) ? $domains : \App\Models\Domain::all();
@@ -983,32 +984,32 @@
             @endforeach
         </div>
 
-        <nav class="sidebar-nav">
-            <div class="sidebar-nav-title">التنقل</div>
-            <a href="{{ route('topics.index') }}" class="{{ request()->routeIs('topics.index') && !request('category') && !request('tag') ? 'active' : '' }}">
-                <span class="nav-icon">🏠</span> كل المواضيع
-            </a>
-            <a href="{{ route('topics.create', ['domain' => session('current_domain', 'flutter')]) }}" class="{{ request()->routeIs('topics.create') ? 'active' : '' }}">
-                <span class="nav-icon">✏️</span> موضوع جديد
-            </a>
-            <a href="{{ route('topics.graph') }}" class="{{ request()->routeIs('topics.graph') ? 'active' : '' }}">
-                <span class="nav-icon">🕸️</span> خريطة المعرفة
-            </a>
-            <a href="{{ route('topics.review') }}" class="{{ request()->routeIs('topics.review') ? 'active' : '' }}">
-                <span class="nav-icon">🔄</span> مراجعة
-                @if(isset($reviewCount) && $reviewCount > 0)
-                    <span class="nav-badge">{{ $reviewCount }}</span>
-                @endif
-            </a>
+	        <nav class="sidebar-nav">
+	            <div class="sidebar-nav-title">التنقل</div>
+	            <a href="{{ route('topics.index', ['domain' => session('current_domain', 'flutter')]) }}" class="{{ request()->routeIs('topics.index') && !request('category') && !request('tag') ? 'active' : '' }}">
+	                <span class="nav-icon">🏠</span> كل المواضيع
+	            </a>
+	            <a href="{{ route('topics.create', ['domain' => session('current_domain', 'flutter')]) }}" class="{{ request()->routeIs('topics.create') ? 'active' : '' }}">
+	                <span class="nav-icon">✏️</span> موضوع جديد
+	            </a>
+	            <a href="{{ route('topics.graph', ['domain' => session('current_domain', 'flutter')]) }}" class="{{ request()->routeIs('topics.graph') ? 'active' : '' }}">
+	                <span class="nav-icon">🕸️</span> خريطة المعرفة
+	            </a>
+	            <a href="{{ route('topics.review', ['domain' => session('current_domain', 'flutter')]) }}" class="{{ request()->routeIs('topics.review') ? 'active' : '' }}">
+	                <span class="nav-icon">🔄</span> مراجعة
+	                @if(isset($reviewCount) && $reviewCount > 0)
+	                    <span class="nav-badge">{{ $reviewCount }}</span>
+	                @endif
+	            </a>
             
             <a href="{{ route('admin.index') }}" class="{{ request()->is('admin*') ? 'active' : '' }}">
                 <span class="nav-icon">🛡️</span> لوحة التحكم
             </a>
 
-            <a href="{{ route('search') }}" class="{{ request()->routeIs('search') ? 'active' : '' }}">
-                <span class="nav-icon">🔍</span> بحث متقدم
-            </a>
-        </nav>
+	            <a href="{{ route('search', ['domain' => session('current_domain', 'flutter')]) }}" class="{{ request()->routeIs('search') ? 'active' : '' }}">
+	                <span class="nav-icon">🔍</span> بحث متقدم
+	            </a>
+	        </nav>
 
         @php
             if (!isset($tags)) {

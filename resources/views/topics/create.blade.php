@@ -7,10 +7,10 @@
         <h2>✏️ موضوع جديد</h2>
         <div class="subtitle">أضف معرفة جديدة لقاعدة البيانات</div>
     </div>
-    <a href="{{ route('topics.index') }}" class="btn btn-secondary">→ رجوع</a>
+    <a href="{{ route('topics.index', ['domain' => $domain->slug]) }}" class="btn btn-secondary">→ رجوع</a>
 </div>
 
-<form action="{{ route('topics.store') }}" method="POST">
+<form action="{{ route('topics.store', ['domain' => $domain->slug]) }}" method="POST">
     @csrf
 
     <div class="form-group">

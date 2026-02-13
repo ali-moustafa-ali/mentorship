@@ -197,7 +197,7 @@
             
             <div class="divider"></div>
 
-            <a href="{{ route('topics.index') }}">
+            <a href="{{ route('topics.index', ['domain' => session('current_domain', 'flutter')]) }}">
                 <span class="nav-icon">🏠</span> العودة للموقع
             </a>
         </nav>

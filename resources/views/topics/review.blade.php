@@ -2,6 +2,10 @@
 @section('title', 'مراجعة المواضيع')
 @section('content')
 
+@php
+    $domainSlug = request('domain', session('current_domain', $currentDomain->slug ?? 'flutter'));
+@endphp
+
 <div class="page-header">
     <div>
         <h2>🔄 مواضيع تحتاج مراجعة</h2>
@@ -12,7 +16,7 @@
 @if($topics->count())
     <div class="topics-grid">
         @foreach($topics as $topic)
-            <a href="{{ route('topics.show', $topic) }}" class="topic-card">
+            <a href="{{ route('topics.show', [$topic, 'domain' => $domainSlug]) }}" class="topic-card">
                 <div class="card-top">
                     <h3>{{ $topic->title }}</h3>
                     @if($topic->is_pinned)

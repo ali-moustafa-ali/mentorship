@@ -2,15 +2,19 @@
 @section('title', 'تعديل: ' . $topic->title)
 @section('content')
 
+@php
+    $domainSlug = request('domain', session('current_domain', $topic->domain?->slug ?? 'flutter'));
+@endphp
+
 <div class="page-header">
     <div>
         <h2>✏️ تعديل: {{ $topic->title }}</h2>
         <div class="subtitle">تعديل محتوى الموضوع</div>
     </div>
-    <a href="{{ route('topics.show', $topic) }}" class="btn btn-secondary">→ رجوع للموضوع</a>
+    <a href="{{ route('topics.show', [$topic, 'domain' => $domainSlug]) }}" class="btn btn-secondary">→ رجوع للموضوع</a>
 </div>
 
-<form action="{{ route('topics.update', $topic) }}" method="POST">
+<form action="{{ route('topics.update', [$topic, 'domain' => $domainSlug]) }}" method="POST">
     @csrf @method('PUT')
 
     <div class="form-group">

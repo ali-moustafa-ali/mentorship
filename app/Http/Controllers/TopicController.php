@@ -112,15 +112,28 @@ class TopicController extends Controller
         // Save initial version
         $topic->saveVersion('إنشاء الموضوع');
 
-        return redirect()->route('topics.show', $topic->slug)
+        return redirect()->route('topics.show', [$topic, 'domain' => $domain->slug])
             ->with('success', 'تم إنشاء الموضوع بنجاح!');
     }
 
-    public function show(Topic $topic)
+    public function show(Request $request, Topic $topic)
     {
-        // Switch domain context if viewing a topic from another domain
-        if ($topic->domain_id && $topic->domain->slug !== session('current_domain', 'flutter')) {
-            session(['current_domain' => $topic->domain->slug]);
+        $topicDomainSlug = $topic->domain?->slug;
+        $requestedDomain = $request->query('domain');
+
+        // Canonicalize: topic pages should always be "inside" a domain context.
+        if (!$requestedDomain && $topicDomainSlug) {
+            return redirect()->route('topics.show', [$topic, 'domain' => $topicDomainSlug]);
+        }
+        if ($requestedDomain && $topicDomainSlug && $requestedDomain !== $topicDomainSlug) {
+            return redirect()->route('topics.show', [$topic, 'domain' => $topicDomainSlug]);
+        }
+
+        // Prefer explicit ?domain=, otherwise fall back to the topic's own domain.
+        if ($requestedDomain) {
+            session(['current_domain' => $requestedDomain]);
+        } elseif ($topicDomainSlug) {
+            session(['current_domain' => $topicDomainSlug]);
         }
 
         $backlinks = $topic->backlinks;
@@ -182,19 +195,23 @@ class TopicController extends Controller
 
         $this->syncTags($topic, $request->input('tags') ?? '');
 
-        return redirect()->route('topics.show', $topic->slug)
+        return redirect()->route('topics.show', [$topic, 'domain' => $topic->domain?->slug ?? session('current_domain', 'flutter')])
             ->with('success', 'تم تحديث الموضوع بنجاح!');
     }
 
     public function destroy(Topic $topic)
     {
+        $domainSlug = $topic->domain?->slug ?? session('current_domain', 'flutter');
         $topic->delete();
-        return redirect()->route('topics.index')
+        return redirect()->route('topics.index', ['domain' => $domainSlug])
             ->with('success', 'تم حذف الموضوع بنجاح!');
     }
 
     public function search(Request $request)
     {
+        if ($request->has('domain')) {
+            session(['current_domain' => $request->domain]);
+        }
         $currentDomainSlug = session('current_domain', 'flutter');
         $currentDomain = \App\Models\Domain::where('slug', $currentDomainSlug)->firstOrFail();
 
@@ -235,14 +252,22 @@ class TopicController extends Controller
             'body' => $version->body,
         ]);
 
-        return redirect()->route('topics.show', $topic->slug)
+        return redirect()->route('topics.show', [$topic, 'domain' => $topic->domain?->slug ?? session('current_domain', 'flutter')])
             ->with('success', 'تم استعادة النسخة رقم ' . $version->version_number);
     }
 
     public function review()
     {
-        $topics = Topic::needsReview(7)->with('tags')->latest('last_reviewed_at')->get();
-        return view('topics.review', compact('topics'));
+        $currentDomainSlug = session('current_domain', 'flutter');
+        $currentDomain = \App\Models\Domain::where('slug', $currentDomainSlug)->firstOrFail();
+
+        $topics = Topic::where('domain_id', $currentDomain->id)
+            ->needsReview(7)
+            ->with('tags')
+            ->latest('last_reviewed_at')
+            ->get();
+
+        return view('topics.review', compact('topics', 'currentDomain'));
     }
 
     public function export(Topic $topic, string $format)

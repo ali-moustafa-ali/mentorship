@@ -2,12 +2,16 @@
 @section('title', 'إصدارات: ' . $topic->title)
 @section('content')
 
+@php
+    $domainSlug = request('domain', session('current_domain', $topic->domain?->slug ?? 'flutter'));
+@endphp
+
 <div class="page-header">
     <div>
         <h2>📜 تاريخ الإصدارات: {{ $topic->title }}</h2>
         <div class="subtitle">{{ $versions->count() }} إصدار محفوظ</div>
     </div>
-    <a href="{{ route('topics.show', $topic) }}" class="btn btn-secondary">→ رجوع للموضوع</a>
+    <a href="{{ route('topics.show', [$topic, 'domain' => $domainSlug]) }}" class="btn btn-secondary">→ رجوع للموضوع</a>
 </div>
 
 @if($versions->count())
@@ -22,7 +26,7 @@
                     </div>
                 </div>
                 <div class="btn-group">
-                    <form action="{{ route('topics.restoreVersion', [$topic, $version]) }}" method="POST" onsubmit="return confirm('هل تريد استعادة هذه النسخة؟')">
+                    <form action="{{ route('topics.restoreVersion', ['topic' => $topic, 'version' => $version, 'domain' => $domainSlug]) }}" method="POST" onsubmit="return confirm('هل تريد استعادة هذه النسخة؟')">
                         @csrf
                         <button type="submit" class="btn btn-sm btn-secondary">♻️ استعادة</button>
                     </form>

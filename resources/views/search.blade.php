@@ -2,6 +2,10 @@
 @section('title', 'بحث')
 @section('content')
 
+@php
+    $domainSlug = request('domain', session('current_domain', 'flutter'));
+@endphp
+
 <div class="page-header">
     <div>
         <h2>🔍 بحث في المواضيع</h2>
@@ -10,6 +14,7 @@
 </div>
 
 <form action="{{ route('search') }}" method="GET" class="search-page-input">
+    <input type="hidden" name="domain" value="{{ $domainSlug }}">
     <input type="text" name="q" class="form-control" value="{{ $query }}" placeholder="اكتب كلمة البحث..." autofocus>
     <button type="submit" class="btn btn-primary">بحث</button>
 </form>
@@ -22,7 +27,7 @@
     @forelse($results as $topic)
         <div class="search-result-item">
             <h3>
-                <a href="{{ route('topics.show', $topic) }}">{{ $topic->title }}</a>
+                <a href="{{ route('topics.show', [$topic, 'domain' => $domainSlug]) }}">{{ $topic->title }}</a>
                 @if($topic->category)
                     <span style="font-size: 0.75rem; color: var(--text-muted); margin-right: 8px;">{{ $topic->category }}</span>
                 @endif
