@@ -1,0 +1,38 @@
+name: Deploy Mentor to VPS
+
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USERNAME }}
+          password: ${{ secrets.VPS_PASSWORD }}
+          script: |
+            set -euo pipefail
+
+            cd /var/www/mentor
+            git pull origin main
+
+            docker volume inspect mentor_dbdata >/dev/null 2>&1 || docker volume create mentor_dbdata >/dev/null
+
+            # Build Vite assets on the host filesystem (bind-mounted into containers).
+            docker run --rm -v "$PWD":/app -w /app node:20-alpine sh -lc 'npm install --no-audit --no-fund && npm run build'
+            rm -f public/hot || true
+
+            docker compose -f docker-compose.prod.yml up -d --build
+
+            docker compose -f docker-compose.prod.yml exec -T app composer install --no-interaction --prefer-dist --no-dev --optimize-autoloader
+            docker compose -f docker-compose.prod.yml exec -T app php artisan migrate --force
+            docker compose -f docker-compose.prod.yml exec -T app php artisan optimize:clear
+
+            chown -R 33:33 /var/www/mentor
+
