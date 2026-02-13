@@ -1105,6 +1105,19 @@
             });
         });
 
+        // Auto-direction for topic text (paragraphs, list items, code) to keep English left-aligned and Arabic right-aligned
+        document.addEventListener('DOMContentLoaded', function() {
+            const nodes = document.querySelectorAll('.topic-body p, .topic-body li, .topic-body pre, .topic-body code');
+            const arabicRegex = /[\u0600-\u06FF]/;
+            nodes.forEach(node => {
+                const txt = node.innerText || '';
+                if (!txt.trim()) return;
+                const hasArabic = arabicRegex.test(txt);
+                node.style.direction = hasArabic ? 'rtl' : 'ltr';
+                node.style.textAlign = hasArabic ? 'right' : 'left';
+            });
+        });
+
         // Copy code
         function copyCode(button) {
             const code = button.closest('.code-block-wrapper').querySelector('code');
