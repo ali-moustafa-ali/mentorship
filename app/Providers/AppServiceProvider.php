@@ -25,7 +25,9 @@ class AppServiceProvider extends ServiceProvider
         // cannot infer the public base URL. Force URL generation to use APP_URL.
         $rootUrl = config('app.url');
         if (is_string($rootUrl) && $rootUrl !== '') {
-            URL::forceRootUrl(rtrim($rootUrl, '/'));
+            // Ensure the base URL ends with "/" so links to the index route become
+            // ".../mentor/?domain=cpp" (not ".../mentor?domain=cpp", which nginx redirects and drops query).
+            URL::forceRootUrl(rtrim($rootUrl, '/') . '/');
 
             $scheme = parse_url($rootUrl, PHP_URL_SCHEME);
             if (is_string($scheme) && $scheme !== '') {
