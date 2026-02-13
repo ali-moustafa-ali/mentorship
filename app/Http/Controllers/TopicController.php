@@ -120,10 +120,27 @@ class TopicController extends Controller
     {
         $topicDomainSlug = $topic->domain?->slug;
         $requestedDomain = $request->query('domain');
+        $requestedDomainModel = $requestedDomain
+            ? \App\Models\Domain::where('slug', $requestedDomain)->first()
+            : null;
+        if ($requestedDomain && !$requestedDomainModel) {
+            $requestedDomain = null;
+        }
+
+        // If this is a legacy topic with no domain, and the caller provided a valid domain, attach it.
+        if (!$topic->domain_id && $requestedDomainModel) {
+            $topic->domain()->associate($requestedDomainModel);
+            $topic->save();
+            $topic->load('domain');
+            $topicDomainSlug = $topic->domain?->slug;
+        }
+
+        $sessionDomain = session('current_domain', 'flutter');
+        $canonicalDomain = $topicDomainSlug ?? $requestedDomain ?? $sessionDomain;
 
         // Canonicalize: topic pages should always be "inside" a domain context.
-        if (!$requestedDomain && $topicDomainSlug) {
-            return redirect()->route('topics.show', [$topic, 'domain' => $topicDomainSlug]);
+        if (!$requestedDomain && $canonicalDomain) {
+            return redirect()->route('topics.show', [$topic, 'domain' => $canonicalDomain]);
         }
         if ($requestedDomain && $topicDomainSlug && $requestedDomain !== $topicDomainSlug) {
             return redirect()->route('topics.show', [$topic, 'domain' => $topicDomainSlug]);
