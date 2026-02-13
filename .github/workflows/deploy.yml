@@ -34,7 +34,7 @@ jobs:
               perl -i -pe 's/return\\s+30[12]\\s+\\/mentor\\/?\\s*;?/return 301 \\/mentor\\/\\$is_args\\$args;/g' "$NGINX_SITE"
 
               # Ensure exact-match location exists (idempotent-ish).
-              if ! rg -q "location\\s*=\\s*/mentor\\s*\\{" "$NGINX_SITE"; then
+              if ! grep -qE "location\\s*=\\s*/mentor\\s*\\{" "$NGINX_SITE"; then
                 perl -0777 -i -pe 's/(server\\s*\\{)/$1\\n\\n    location = \\/mentor {\\n        return 301 \\/mentor\\/\\$is_args\\$args;\\n    }\\n/s' "$NGINX_SITE"
               fi
 
