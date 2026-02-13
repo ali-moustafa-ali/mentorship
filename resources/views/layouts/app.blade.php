@@ -480,7 +480,8 @@
         .topic-body h3 { font-size: 1.1rem; }
         .topic-body p { margin-bottom: 12px; }
         .topic-body ul, .topic-body ol { padding-right: 24px; margin-bottom: 12px; }
-        .topic-body li { margin-bottom: 4px; }
+        /* Preserve manual line breaks inside list items so copied text keeps formatting */
+        .topic-body li { margin-bottom: 4px; white-space: pre-line; }
         .topic-body strong { color: var(--text-primary); }
         .topic-body table { width: 100%; border-collapse: collapse; margin: 16px 0; }
         .topic-body th, .topic-body td {
@@ -937,6 +938,15 @@
             color: #fff;
         }
 
+        /* Preformatted helper for plain text blocks */
+        .preformatted {
+            white-space: pre-wrap;
+            font-family: var(--mono);
+            background: rgba(255,255,255,0.03);
+            padding: 12px 14px;
+            border-radius: 10px;
+            border: 1px solid var(--border);
+        }
         /* ─── Responsive ─── */
         @media (max-width: 768px) {
             .sidebar { position: static; width: 100%; height: auto; border-left: none; border-bottom: 1px solid var(--border); }
