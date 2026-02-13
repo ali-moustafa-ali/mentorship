@@ -946,6 +946,8 @@
             padding: 12px 14px;
             border-radius: 10px;
             border: 1px solid var(--border);
+            text-align: left;
+            direction: ltr;
         }
         /* ─── Responsive ─── */
         @media (max-width: 768px) {
@@ -1084,6 +1086,23 @@
         // Highlight.js init
         document.addEventListener('DOMContentLoaded', function() {
             document.querySelectorAll('pre code').forEach(block => hljs.highlightElement(block));
+        });
+
+        // Auto-direction for preformatted text blocks (English → left, Arabic → right)
+        document.addEventListener('DOMContentLoaded', function() {
+            const blocks = document.querySelectorAll('.preformatted');
+            const arabicRegex = /[\u0600-\u06FF]/;
+            blocks.forEach(block => {
+                const txt = block.innerText || '';
+                const hasArabic = arabicRegex.test(txt);
+                if (hasArabic) {
+                    block.setAttribute('dir', 'rtl');
+                    block.style.textAlign = 'right';
+                } else {
+                    block.setAttribute('dir', 'ltr');
+                    block.style.textAlign = 'left';
+                }
+            });
         });
 
         // Copy code
