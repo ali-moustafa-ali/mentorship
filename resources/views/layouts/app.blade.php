@@ -984,6 +984,10 @@
 	        @endphp
 
 	        <div class="domain-switcher">
+	            <a href="{{ $indexBaseUrl }}" class="domain-item" style="--domain-color: #999;">
+	                <span class="domain-icon">🏠</span>
+	                <span class="domain-name">Home</span>
+	            </a>
 	            @foreach($globalDomains as $domain)
 	                <a href="{{ $indexBaseUrl . '?' . http_build_query(['domain' => $domain->slug]) }}" 
 	                   class="domain-item {{ $currDomainId && $currDomainId == $domain->id ? 'active' : '' }}"
