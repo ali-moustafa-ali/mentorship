@@ -29,9 +29,11 @@ jobs:
               mkdir -p /root/nginx-backups
               cp -f "$NGINX_SITE" "/root/nginx-backups/alimoustafa.in.$(date +%Y%m%d-%H%M%S).conf"
 
-              # Replace any /mentor redirect that drops args.
-              perl -i -pe 's/return\\s+30[12]\\s+(https?:\\/\\/\\$host)?\\/mentor\\/?\\s*;?/return 301 \\/mentor\\/\\$is_args\\$args;/g' "$NGINX_SITE"
-              perl -i -pe 's/return\\s+30[12]\\s+\\/mentor\\/?\\s*;?/return 301 \\/mentor\\/\\$is_args\\$args;/g' "$NGINX_SITE"
+              # Replace common redirect lines without fancy regex to avoid perl errors.
+              sed -i 's|return 301 /mentor/;|return 301 /mentor/$is_args$args;|g' "$NGINX_SITE"
+              sed -i 's|return 302 /mentor/;|return 301 /mentor/$is_args$args;|g' "$NGINX_SITE"
+              sed -i 's|return 301 https://$host/mentor/;|return 301 /mentor/$is_args$args;|g' "$NGINX_SITE"
+              sed -i 's|return 302 https://$host/mentor/;|return 301 /mentor/$is_args$args;|g' "$NGINX_SITE"
 
               # Ensure exact-match location exists (idempotent-ish).
               if ! grep -qE "location\\s*=\\s*/mentor\\s*\\{" "$NGINX_SITE"; then
