@@ -13,11 +13,31 @@ class TopicController extends Controller
     public function index(Request $request)
     {
         // Domain Logic
+        // We intentionally do NOT default-select a domain on / (under /mentor).
+        // A domain is selected only if ?domain=... is present.
         if ($request->has('domain')) {
-            session(['current_domain' => $request->domain]);
+            $domain = \App\Models\Domain::where('slug', $request->domain)->first();
+            if ($domain) {
+                session(['current_domain' => $domain->slug]);
+            } else {
+                $request->session()->forget('current_domain');
+            }
+        } else {
+            $request->session()->forget('current_domain');
         }
-        $currentDomainSlug = session('current_domain', 'flutter');
-        $currentDomain = \App\Models\Domain::where('slug', $currentDomainSlug)->firstOrFail();
+
+        $domains = \App\Models\Domain::all();
+        $currentDomainSlug = session('current_domain');
+        $currentDomain = $currentDomainSlug ? \App\Models\Domain::where('slug', $currentDomainSlug)->first() : null;
+
+        if (!$currentDomain) {
+            // No domain selected yet: show a lightweight landing/chooser.
+            $topics = collect();
+            $categories = collect();
+            $tags = collect();
+            $reviewCount = 0;
+            return view('topics.index', compact('topics', 'categories', 'tags', 'reviewCount', 'currentDomain', 'domains'));
+        }
 
         $query = Topic::where('domain_id', $currentDomain->id)->with('tags');
 
@@ -46,8 +66,6 @@ class TopicController extends Controller
 
         // Topics needing review (not reviewed in 7+ days)
         $reviewCount = Topic::where('domain_id', $currentDomain->id)->needsReview(7)->count();
-        
-        $domains = \App\Models\Domain::all();
 
         return view('topics.index', compact('topics', 'categories', 'tags', 'reviewCount', 'currentDomain', 'domains'));
     }
@@ -60,7 +78,7 @@ class TopicController extends Controller
         
         $title = $request->query('title', '');
         
-        $currentDomainSlug = session('current_domain', 'flutter');
+        $currentDomainSlug = session('current_domain');
         $domain = \App\Models\Domain::where('slug', $currentDomainSlug)->firstOrFail();
         $defaultLanguage = $domain->default_language;
 
@@ -87,7 +105,7 @@ class TopicController extends Controller
             'tags' => 'nullable|string',
         ]);
 
-        $currentDomainSlug = session('current_domain', 'flutter');
+        $currentDomainSlug = session('current_domain');
         $domain = \App\Models\Domain::where('slug', $currentDomainSlug)->firstOrFail();
 
         // Check for duplicate title within domain
@@ -135,7 +153,7 @@ class TopicController extends Controller
             $topicDomainSlug = $topic->domain?->slug;
         }
 
-        $sessionDomain = session('current_domain', 'flutter');
+        $sessionDomain = session('current_domain') ?? 'flutter';
         $canonicalDomain = $topicDomainSlug ?? $requestedDomain ?? $sessionDomain;
 
         // Canonicalize: topic pages should always be "inside" a domain context.
@@ -165,7 +183,7 @@ class TopicController extends Controller
              session(['current_domain' => $topic->domain->slug]);
         }
 
-        $currentDomainSlug = session('current_domain', 'flutter');
+        $currentDomainSlug = session('current_domain') ?? 'flutter';
         $currentDomain = \App\Models\Domain::where('slug', $currentDomainSlug)->firstOrFail();
         $defaultLanguage = $currentDomain->default_language;
 
@@ -212,13 +230,13 @@ class TopicController extends Controller
 
         $this->syncTags($topic, $request->input('tags') ?? '');
 
-        return redirect()->route('topics.show', [$topic, 'domain' => $topic->domain?->slug ?? session('current_domain', 'flutter')])
+        return redirect()->route('topics.show', [$topic, 'domain' => $topic->domain?->slug ?? (session('current_domain') ?? 'flutter')])
             ->with('success', 'تم تحديث الموضوع بنجاح!');
     }
 
     public function destroy(Topic $topic)
     {
-        $domainSlug = $topic->domain?->slug ?? session('current_domain', 'flutter');
+        $domainSlug = $topic->domain?->slug ?? (session('current_domain') ?? 'flutter');
         $topic->delete();
         return redirect()->route('topics.index', ['domain' => $domainSlug])
             ->with('success', 'تم حذف الموضوع بنجاح!');
@@ -229,7 +247,7 @@ class TopicController extends Controller
         if ($request->has('domain')) {
             session(['current_domain' => $request->domain]);
         }
-        $currentDomainSlug = session('current_domain', 'flutter');
+        $currentDomainSlug = session('current_domain') ?? 'flutter';
         $currentDomain = \App\Models\Domain::where('slug', $currentDomainSlug)->firstOrFail();
 
         $query = $request->input('q', '');
@@ -269,13 +287,13 @@ class TopicController extends Controller
             'body' => $version->body,
         ]);
 
-        return redirect()->route('topics.show', [$topic, 'domain' => $topic->domain?->slug ?? session('current_domain', 'flutter')])
+        return redirect()->route('topics.show', [$topic, 'domain' => $topic->domain?->slug ?? (session('current_domain') ?? 'flutter')])
             ->with('success', 'تم استعادة النسخة رقم ' . $version->version_number);
     }
 
     public function review()
     {
-        $currentDomainSlug = session('current_domain', 'flutter');
+        $currentDomainSlug = session('current_domain') ?? 'flutter';
         $currentDomain = \App\Models\Domain::where('slug', $currentDomainSlug)->firstOrFail();
 
         $topics = Topic::where('domain_id', $currentDomain->id)
@@ -310,7 +328,7 @@ class TopicController extends Controller
 
     public function graph()
     {
-        $currentDomainSlug = session('current_domain', 'flutter');
+        $currentDomainSlug = session('current_domain') ?? 'flutter';
         $currentDomain = \App\Models\Domain::where('slug', $currentDomainSlug)->firstOrFail();
 
         $topics = Topic::where('domain_id', $currentDomain->id)->get(['id', 'title', 'slug', 'category', 'body']);
@@ -344,7 +362,7 @@ class TopicController extends Controller
 
     public function apiTopics(Request $request)
     {
-        $currentDomainSlug = session('current_domain', 'flutter');
+        $currentDomainSlug = session('current_domain') ?? 'flutter';
         $currDomainId = \App\Models\Domain::where('slug', $currentDomainSlug)->value('id');
 
         $q = $request->input('q', '');

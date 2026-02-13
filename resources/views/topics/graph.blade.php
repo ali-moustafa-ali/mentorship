@@ -3,7 +3,7 @@
 @section('content')
 
 @php
-    $domainSlug = request('domain', session('current_domain', 'flutter'));
+    $domainSlug = request('domain', session('current_domain'));
 @endphp
 
 <div class="page-header">

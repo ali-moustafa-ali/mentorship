@@ -953,7 +953,7 @@
 
 	    <aside class="sidebar">
 	        <div class="sidebar-header">
-	            <a href="{{ route('topics.index', ['domain' => session('current_domain', 'flutter')]) }}" class="sidebar-logo">
+	            <a href="{{ session('current_domain') ? route('topics.index', ['domain' => session('current_domain')]) : route('topics.index') }}" class="sidebar-logo">
 	                <div class="logo-icon">📘</div>
 	                <h1>{{ isset($currentDomain) ? $currentDomain->name : 'Home' }} Wiki</h1>
 	            </a>
@@ -961,41 +961,47 @@
 	        </div>
 
 	        <form action="{{ route('search') }}" method="GET" class="sidebar-search">
-	            <input type="hidden" name="domain" value="{{ session('current_domain', 'flutter') }}">
+	            @if(session('current_domain'))
+	                <input type="hidden" name="domain" value="{{ session('current_domain') }}">
+	            @endif
 	            <svg class="search-icon" width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
 	                <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
 	            </svg>
 	            <input type="text" name="q" placeholder="ابحث في المواضيع..." value="{{ request('q') }}">
 	        </form>
 
-        @php
-            $globalDomains = isset($domains) ? $domains : \App\Models\Domain::all();
-            $currDomainId = isset($currentDomain) ? $currentDomain->id : (\App\Models\Domain::where('slug', session('current_domain', 'flutter'))->first()->id ?? 1);
-        @endphp
+	        @php
+	            $globalDomains = isset($domains) ? $domains : \App\Models\Domain::all();
+	            $sessionDomainSlug = session('current_domain');
+	            $sessionDomain = $sessionDomainSlug ? \App\Models\Domain::where('slug', $sessionDomainSlug)->first() : null;
+	            $currDomainId = isset($currentDomain) ? $currentDomain->id : ($sessionDomain->id ?? null);
+	        @endphp
 
-        <div class="domain-switcher">
-            @foreach($globalDomains as $domain)
-                <a href="{{ route('topics.index', ['domain' => $domain->slug]) }}" 
-                   class="domain-item {{ $currDomainId == $domain->id ? 'active' : '' }}"
-                   style="--domain-color: {{ $domain->color }}">
-                   <span class="domain-icon">{{ $domain->icon }}</span>
-                   <span class="domain-name">{{ $domain->name }}</span>
-                </a>
-            @endforeach
-        </div>
+	        <div class="domain-switcher">
+	            @foreach($globalDomains as $domain)
+	                <a href="{{ route('topics.index', ['domain' => $domain->slug]) }}" 
+	                   class="domain-item {{ $currDomainId && $currDomainId == $domain->id ? 'active' : '' }}"
+	                   style="--domain-color: {{ $domain->color }}">
+	                   <span class="domain-icon">{{ $domain->icon }}</span>
+	                   <span class="domain-name">{{ $domain->name }}</span>
+	                </a>
+	            @endforeach
+	        </div>
 
 	        <nav class="sidebar-nav">
 	            <div class="sidebar-nav-title">التنقل</div>
-	            <a href="{{ route('topics.index', ['domain' => session('current_domain', 'flutter')]) }}" class="{{ request()->routeIs('topics.index') && !request('category') && !request('tag') ? 'active' : '' }}">
+	            <a href="{{ session('current_domain') ? route('topics.index', ['domain' => session('current_domain')]) : route('topics.index') }}" class="{{ request()->routeIs('topics.index') && !request('category') && !request('tag') ? 'active' : '' }}">
 	                <span class="nav-icon">🏠</span> كل المواضيع
 	            </a>
-	            <a href="{{ route('topics.create', ['domain' => session('current_domain', 'flutter')]) }}" class="{{ request()->routeIs('topics.create') ? 'active' : '' }}">
+	            @if(session('current_domain'))
+	            <a href="{{ route('topics.create', ['domain' => session('current_domain')]) }}" class="{{ request()->routeIs('topics.create') ? 'active' : '' }}">
 	                <span class="nav-icon">✏️</span> موضوع جديد
 	            </a>
-	            <a href="{{ route('topics.graph', ['domain' => session('current_domain', 'flutter')]) }}" class="{{ request()->routeIs('topics.graph') ? 'active' : '' }}">
+	            @endif
+	            <a href="{{ session('current_domain') ? route('topics.graph', ['domain' => session('current_domain')]) : route('topics.graph') }}" class="{{ request()->routeIs('topics.graph') ? 'active' : '' }}">
 	                <span class="nav-icon">🕸️</span> خريطة المعرفة
 	            </a>
-	            <a href="{{ route('topics.review', ['domain' => session('current_domain', 'flutter')]) }}" class="{{ request()->routeIs('topics.review') ? 'active' : '' }}">
+	            <a href="{{ session('current_domain') ? route('topics.review', ['domain' => session('current_domain')]) : route('topics.review') }}" class="{{ request()->routeIs('topics.review') ? 'active' : '' }}">
 	                <span class="nav-icon">🔄</span> مراجعة
 	                @if(isset($reviewCount) && $reviewCount > 0)
 	                    <span class="nav-badge">{{ $reviewCount }}</span>
@@ -1006,7 +1012,7 @@
                 <span class="nav-icon">🛡️</span> لوحة التحكم
             </a>
 
-	            <a href="{{ route('search', ['domain' => session('current_domain', 'flutter')]) }}" class="{{ request()->routeIs('search') ? 'active' : '' }}">
+	            <a href="{{ session('current_domain') ? route('search', ['domain' => session('current_domain')]) : route('search') }}" class="{{ request()->routeIs('search') ? 'active' : '' }}">
 	                <span class="nav-icon">🔍</span> بحث متقدم
 	            </a>
 	        </nav>
@@ -1020,30 +1026,30 @@
             }
         @endphp
 
-        @if(isset($categories) && $categories->count())
-            <div class="sidebar-tags">
-                <div class="sidebar-nav-title">التصنيفات</div>
-                @foreach($categories as $cat)
-                    <a href="{{ route('topics.index', ['category' => $cat, 'domain' => session('current_domain', 'flutter')]) }}"
-                       class="category-tag {{ request('category') === $cat ? 'active' : '' }}">{{ $cat }}</a>
-                @endforeach
-            </div>
-        @endif
+	        @if(isset($categories) && $categories->count())
+	            <div class="sidebar-tags">
+	                <div class="sidebar-nav-title">التصنيفات</div>
+	                @foreach($categories as $cat)
+	                    <a href="{{ route('topics.index', ['category' => $cat, 'domain' => (session('current_domain') ?? 'flutter')]) }}"
+	                       class="category-tag {{ request('category') === $cat ? 'active' : '' }}">{{ $cat }}</a>
+	                @endforeach
+	            </div>
+	        @endif
 
-        @if(isset($tags) && $tags->count())
-            <div class="sidebar-tags">
-                <div class="sidebar-nav-title">التاقات</div>
-                @foreach($tags as $tag)
-                    <a href="{{ route('topics.index', ['tag' => $tag->slug, 'domain' => session('current_domain', 'flutter')]) }}"
-                       class="tag-pill {{ request('tag') === $tag->slug ? 'active' : '' }}"
-                       style="border-color: {{ $tag->color }}; {{ request('tag') === $tag->slug ? 'background:' . $tag->color . '; color:#fff;' : '' }}">
-                        {{ $tag->name }}
-                        <small>({{ $tag->topics_count }})</small>
-                    </a>
-                @endforeach
-            </div>
-        @endif
-    </aside>
+	        @if(isset($tags) && $tags->count())
+	            <div class="sidebar-tags">
+	                <div class="sidebar-nav-title">التاقات</div>
+	                @foreach($tags as $tag)
+	                    <a href="{{ route('topics.index', ['tag' => $tag->slug, 'domain' => (session('current_domain') ?? 'flutter')]) }}"
+	                       class="tag-pill {{ request('tag') === $tag->slug ? 'active' : '' }}"
+	                       style="border-color: {{ $tag->color }}; {{ request('tag') === $tag->slug ? 'background:' . $tag->color . '; color:#fff;' : '' }}">
+	                        {{ $tag->name }}
+	                        <small>({{ $tag->topics_count }})</small>
+	                    </a>
+	                @endforeach
+	            </div>
+	        @endif
+	    </aside>
 
     <main class="main-content">
         @if(session('success'))

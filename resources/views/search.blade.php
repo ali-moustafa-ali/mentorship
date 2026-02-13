@@ -3,7 +3,7 @@
 @section('content')
 
 @php
-    $domainSlug = request('domain', session('current_domain', 'flutter'));
+    $domainSlug = request('domain', session('current_domain'));
 @endphp
 
 <div class="page-header">
@@ -14,7 +14,9 @@
 </div>
 
 <form action="{{ route('search') }}" method="GET" class="search-page-input">
-    <input type="hidden" name="domain" value="{{ $domainSlug }}">
+    @if($domainSlug)
+        <input type="hidden" name="domain" value="{{ $domainSlug }}">
+    @endif
     <input type="text" name="q" class="form-control" value="{{ $query }}" placeholder="اكتب كلمة البحث..." autofocus>
     <button type="submit" class="btn btn-primary">بحث</button>
 </form>
@@ -46,7 +48,7 @@
             <div class="empty-icon">🔍</div>
             <h3>لا توجد نتائج</h3>
             <p>لم يتم العثور على مواضيع تطابق "{{ $query }}"</p>
-            <a href="{{ route('topics.create', ['title' => $query, 'domain' => session('current_domain', 'flutter')]) }}" class="btn btn-primary">✏️ أنشئ موضوع "{{ $query }}"</a>
+            <a href="{{ route('topics.create', ['title' => $query, 'domain' => ($domainSlug ?? session('current_domain') ?? 'flutter')]) }}" class="btn btn-primary">✏️ أنشئ موضوع "{{ $query }}"</a>
         </div>
     @endforelse
 @endif

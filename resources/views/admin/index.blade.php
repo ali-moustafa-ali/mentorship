@@ -38,7 +38,9 @@
     <h3>روابط سريعة</h3>
     <div style="display: flex; gap: 10px; margin-top: 15px;">
         <a href="{{ route('admin.domains.create') }}" class="btn btn-primary">➕ إضافة دومين جديد</a>
-        <a href="{{ route('topics.create', ['domain' => session('current_domain', 'flutter')]) }}" class="btn btn-secondary">✏️ كتابة موضوع جديد</a>
+        @if(session('current_domain'))
+            <a href="{{ route('topics.create', ['domain' => session('current_domain')]) }}" class="btn btn-secondary">✏️ كتابة موضوع جديد</a>
+        @endif
     </div>
 </div>
 @endsection

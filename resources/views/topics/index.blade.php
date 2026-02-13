@@ -5,15 +5,27 @@
 <div class="page-header">
     <div>
         <h2>📚 كل المواضيع</h2>
+        @if(!$currentDomain)
+            <div class="subtitle">اختر دومين لعرض المواضيع</div>
+        @endif
         @if(request('category'))
             <div class="subtitle">تصفية: {{ request('category') }}</div>
         @elseif(request('tag'))
             <div class="subtitle">تاق: {{ request('tag') }}</div>
         @endif
     </div>
-    <a href="{{ route('topics.create', ['domain' => $currentDomain->slug]) }}" class="btn btn-primary">✏️ موضوع جديد</a>
+    @if($currentDomain)
+        <a href="{{ route('topics.create', ['domain' => $currentDomain->slug]) }}" class="btn btn-primary">✏️ موضوع جديد</a>
+    @endif
 </div>
 
+@if(!$currentDomain)
+    <div class="empty-state" style="margin-top: 22px;">
+        <div class="empty-icon">🌐</div>
+        <h3>اختر دومين</h3>
+        <p>من القائمة على اليمين اختر الدومين (مثال: C++، Flutter) علشان يظهر المحتوى.</p>
+    </div>
+@else
 <div class="stats-bar">
     <div class="stat-item">
         <div class="stat-icon" style="background: var(--accent-glow);">📝</div>
@@ -82,3 +94,4 @@
 @endif
 
 @endsection
+@endif
