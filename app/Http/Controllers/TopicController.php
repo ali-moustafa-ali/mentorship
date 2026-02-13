@@ -107,7 +107,7 @@ class TopicController extends Controller
         ]);
 
         // Handle tags
-        $this->syncTags($topic, $request->input('tags', ''));
+        $this->syncTags($topic, $request->input('tags') ?? '');
 
         // Save initial version
         $topic->saveVersion('إنشاء الموضوع');
@@ -180,7 +180,7 @@ class TopicController extends Controller
             'category' => $validated['category'] ?? null,
         ]);
 
-        $this->syncTags($topic, $request->input('tags', ''));
+        $this->syncTags($topic, $request->input('tags') ?? '');
 
         return redirect()->route('topics.show', $topic->slug)
             ->with('success', 'تم تحديث الموضوع بنجاح!');
@@ -329,8 +329,9 @@ class TopicController extends Controller
 
     // ─── Helpers ───
 
-    private function syncTags(Topic $topic, string $tagsString): void
+    private function syncTags(Topic $topic, ?string $tagsString): void
     {
+        $tagsString = $tagsString ?? '';
         $tagNames = array_filter(array_map('trim', explode(',', $tagsString)));
         $tagIds = [];
 
