@@ -26,12 +26,18 @@ jobs:
               mkdir -p /root/nginx-backups
               cp -f "$NGINX_SITE" "/root/nginx-backups/alimoustafa.in.$(date +%Y%m%d-%H%M%S).conf"
 
-              # Ensure a dedicated redirect location exists and preserves args.
+              # 1) Fix common explicit redirects that drop query strings.
+              # Examples:
+              # - return 301 /mentor/;
+              # - return 302 https://$host/mentor/;
+              perl -i -pe '
+                s/return\\s+30[12]\\s+((?:https?:\\/\\/[^;\\s]+)?\\/mentor\\/)(?!\\$is_args\\$args)\\s*;/return 301 $1\\$is_args\\$args;/g;
+              ' "$NGINX_SITE"
+
+              # 2) Ensure a dedicated redirect location exists and preserves args (best-effort insertion).
               perl -0777 -i -pe '
-                if ($_ =~ /location\\s*=\\s*\\/mentor\\s*\\{[^}]*\\}/s) {
-                  s/location\\s*=\\s*\\/mentor\\s*\\{[^}]*\\}/location = \\/mentor {\\n        return 301 \\/mentor\\/\\$is_args\\$args;\\n    }/s;
-                } else {
-                  s/location\\s+\\/mentor\\/\\s*\\{/location = \\/mentor {\\n        return 301 \\/mentor\\/\\$is_args\\$args;\\n    }\\n\\n    location \\/mentor\\/ {/s;
+                if ($_ !~ /location\\s*=\\s*\\/mentor\\s*\\{/s) {
+                  s/(server\\s*\\{)/$1\\n\\n    location = \\/mentor {\\n        return 301 \\/mentor\\/\\$is_args\\$args;\\n    }\\n/s;
                 }
               ' "$NGINX_SITE"
 
