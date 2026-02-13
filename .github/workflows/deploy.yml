@@ -19,6 +19,26 @@ jobs:
           script: |
             set -euo pipefail
 
+            # Preserve query string when nginx redirects /mentor -> /mentor/
+            # (otherwise /mentor?domain=cpp becomes /mentor/ and domain switching breaks).
+            NGINX_SITE="/etc/nginx/sites-available/alimoustafa.in"
+            if [ -f "$NGINX_SITE" ]; then
+              mkdir -p /root/nginx-backups
+              cp -f "$NGINX_SITE" "/root/nginx-backups/alimoustafa.in.$(date +%Y%m%d-%H%M%S).conf"
+
+              # Ensure a dedicated redirect location exists and preserves args.
+              perl -0777 -i -pe '
+                if ($_ =~ /location\\s*=\\s*\\/mentor\\s*\\{[^}]*\\}/s) {
+                  s/location\\s*=\\s*\\/mentor\\s*\\{[^}]*\\}/location = \\/mentor {\\n        return 301 \\/mentor\\/\\$is_args\\$args;\\n    }/s;
+                } else {
+                  s/location\\s+\\/mentor\\/\\s*\\{/location = \\/mentor {\\n        return 301 \\/mentor\\/\\$is_args\\$args;\\n    }\\n\\n    location \\/mentor\\/ {/s;
+                }
+              ' "$NGINX_SITE"
+
+              nginx -t
+              systemctl reload nginx
+            fi
+
             cd /var/www/mentor
             git config --global --add safe.directory /var/www/mentor || true
             git pull origin main
