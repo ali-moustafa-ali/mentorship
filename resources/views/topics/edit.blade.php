@@ -25,7 +25,13 @@
 
     <div class="form-group">
         <label for="category">التصنيف</label>
-        <input type="text" name="category" id="category" class="form-control" value="{{ old('category', $topic->category) }}">
+        <input type="text" name="category" id="category" class="form-control" value="{{ old('category', $topic->category) }}" list="category-list">
+        <datalist id="category-list">
+            @foreach($categories as $cat)
+                <option value="{{ $cat }}">
+            @endforeach
+        </datalist>
+        <div class="form-hint">اقتراحات من تصنيفات الدومين الحالي.</div>
     </div>
 
     <div class="form-group">
