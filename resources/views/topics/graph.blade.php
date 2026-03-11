@@ -2,23 +2,22 @@
 @section('title', 'خريطة المعرفة')
 @section('content')
 
-<div class="page-header">
-    <div>
-        <h2>🕸️ خريطة المعرفة</h2>
-        <div class="subtitle">عرض بصري لكل المواضيع والروابط بينها</div>
-    </div>
-    <a href="{{ route('topics.index') }}" class="btn btn-secondary">→ رجوع</a>
-</div>
+<style>
+    /* Override main-content padding for full-screen graph */
+    .main-content { padding: 0 !important; overflow: hidden; }
+</style>
 
 <div id="graph-container" style="
     width: 100%;
-    height: 70vh;
+    height: 100vh;
     background: var(--bg-card);
-    border: 1px solid var(--border);
-    border-radius: 14px;
     overflow: hidden;
     position: relative;
 ">
+    <div style="position: absolute; top: 16px; right: 16px; z-index: 10; display: flex; gap: 8px; align-items: center;">
+        <span style="font-size: 0.8rem; color: var(--text-muted);">⬤ المواضيع —— الروابط · اسحب العقد لتحريكها · عجلة الماوس للتكبير</span>
+        <a href="{{ route('topics.index') }}" class="btn btn-secondary btn-sm" style="white-space: nowrap;">→ رجوع</a>
+    </div>
     <div id="graph-tooltip" style="
         position: absolute;
         background: var(--bg-secondary);
@@ -32,10 +31,6 @@
         z-index: 50;
         box-shadow: 0 4px 15px rgba(0,0,0,0.3);
     "></div>
-</div>
-
-<div style="margin-top: 16px; display: flex; gap: 12px; flex-wrap: wrap;">
-    <span style="font-size: 0.8rem; color: var(--text-muted);">⬤ المواضيع &nbsp;—— الروابط · اسحب العقد لتحريكها · يمكنك التكبير بعجلة الماوس</span>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/d3/7.9.0/d3.min.js"></script>
