@@ -1,0 +1,54 @@
+name: Deploy to Server
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: ${{ secrets.SERVER_USER }}
+          password: ${{ secrets.SERVER_PASSWORD }}
+          script: |
+            set -e
+            cd /var/www/mentor
+
+            echo ">>> Pulling latest code..."
+            git pull origin main
+
+            echo ">>> Rebuilding app container..."
+            docker compose -f docker-compose.prod.yml build app
+
+            echo ">>> Restarting containers..."
+            docker compose -f docker-compose.prod.yml up -d
+
+            echo ">>> Installing composer dependencies..."
+            docker exec mentor_app composer install --no-interaction --prefer-dist --optimize-autoloader --no-dev
+
+            echo ">>> Installing node dependencies & building assets..."
+            docker exec mentor_app npm install
+            docker exec mentor_app npm run build
+
+            echo ">>> Running migrations (safe, no data loss)..."
+            docker exec mentor_app php artisan migrate --force
+
+            echo ">>> Optimizing caches..."
+            docker exec mentor_app php artisan config:cache
+            docker exec mentor_app php artisan route:cache
+            docker exec mentor_app php artisan view:cache
+
+            echo ">>> Setting permissions..."
+            docker exec mentor_app chown -R www-data:www-data /var/www/storage /var/www/bootstrap/cache
+            docker exec mentor_app chmod -R 775 /var/www/storage /var/www/bootstrap/cache
+
+            echo "✅ Deployment completed successfully!"
