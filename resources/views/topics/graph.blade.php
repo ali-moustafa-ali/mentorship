@@ -80,19 +80,18 @@ svg.call(zoom);
 svg.call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1));
 
 const simulation = d3.forceSimulation(nodes)
-    .force('link', d3.forceLink(links).id(d => d.id).distance(400))
-    .force('charge', d3.forceManyBody().strength(-2000).distanceMax(1200))
+    .force('link', d3.forceLink(links).id(d => d.id).distance(300))
+    .force('charge', d3.forceManyBody().strength(-3000).distanceMax(1500))
     .force('center', d3.forceCenter(width / 2, height / 2))
-    .force('collision', d3.forceCollide(120).iterations(3))
-    .force('x', d3.forceX(width / 2).strength(0.008))
-    .force('y', d3.forceY(height / 2).strength(0.008));
+    .force('collision', d3.forceCollide(100).iterations(4))
+    .force('x', d3.forceX(width / 2).strength(0.005))
+    .force('y', d3.forceY(height / 2).strength(0.005));
 
-// Links — curved paths
+// Links — straight lines
 const link = g.append('g')
-    .selectAll('path')
+    .selectAll('line')
     .data(links)
-    .enter().append('path')
-    .attr('fill', 'none')
+    .enter().append('line')
     .attr('stroke', 'rgba(140,160,200,0.25)')
     .attr('stroke-width', 1.5);
 
@@ -162,12 +161,10 @@ node.on('mouseover', function(event, d) {
 });
 
 simulation.on('tick', () => {
-    link.attr('d', d => {
-        const dx = d.target.x - d.source.x;
-        const dy = d.target.y - d.source.y;
-        const dr = Math.sqrt(dx * dx + dy * dy) * 1.5;
-        return 'M' + d.source.x + ',' + d.source.y + 'A' + dr + ',' + dr + ' 0 0,1 ' + d.target.x + ',' + d.target.y;
-    });
+    link.attr('x1', d => d.source.x)
+        .attr('y1', d => d.source.y)
+        .attr('x2', d => d.target.x)
+        .attr('y2', d => d.target.y);
     node.attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
 });
 
