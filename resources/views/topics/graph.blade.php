@@ -18,6 +18,11 @@
         <span style="font-size: 0.8rem; color: var(--text-muted);">⬤ المواضيع —— الروابط · اسحب العقد لتحريكها · عجلة الماوس للتكبير</span>
         <a href="{{ route('topics.index') }}" class="btn btn-secondary btn-sm" style="white-space: nowrap;">→ رجوع</a>
     </div>
+    <div style="position: absolute; bottom: 24px; left: 24px; z-index: 10; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        <span style="font-size: 0.78rem; color: var(--text-muted); white-space: nowrap;">📏 المسافة</span>
+        <input type="range" id="distance-slider" min="100" max="800" value="300" style="width: 160px; accent-color: var(--accent); cursor: pointer;">
+        <span id="distance-value" style="font-size: 0.78rem; color: var(--text-secondary); min-width: 30px; text-align: center;">300</span>
+    </div>
     <div id="graph-tooltip" style="
         position: absolute;
         background: var(--bg-secondary);
@@ -177,6 +182,14 @@ function dragended(event, d) {
     if (!event.active) simulation.alphaTarget(0);
     d.fx = null; d.fy = null;
 }
+
+// Slider control
+document.getElementById('distance-slider').addEventListener('input', function() {
+    const val = +this.value;
+    document.getElementById('distance-value').textContent = val;
+    simulation.force('link').distance(val);
+    simulation.alpha(0.5).restart();
+});
 </script>
 
 @endsection
