@@ -18,10 +18,17 @@
         <span style="font-size: 0.8rem; color: var(--text-muted);">⬤ المواضيع —— الروابط · اسحب العقد لتحريكها · عجلة الماوس للتكبير</span>
         <a href="{{ route('topics.index') }}" class="btn btn-secondary btn-sm" style="white-space: nowrap;">→ رجوع</a>
     </div>
-    <div style="position: absolute; bottom: 24px; left: 24px; z-index: 10; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 12px 18px; display: flex; align-items: center; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
-        <span style="font-size: 0.78rem; color: var(--text-muted); white-space: nowrap;">📏 المسافة</span>
-        <input type="range" id="distance-slider" min="100" max="800" value="300" style="width: 160px; accent-color: var(--accent); cursor: pointer;">
-        <span id="distance-value" style="font-size: 0.78rem; color: var(--text-secondary); min-width: 30px; text-align: center;">300</span>
+    <div style="position: absolute; bottom: 24px; left: 24px; z-index: 10; background: var(--bg-secondary); border: 1px solid var(--border); border-radius: 12px; padding: 12px 18px; display: flex; flex-direction: column; gap: 12px; box-shadow: 0 4px 15px rgba(0,0,0,0.3);">
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 0.78rem; color: var(--text-muted); width: 50px; white-space: nowrap;">📏 المسافة</span>
+            <input type="range" id="distance-slider" min="50" max="600" value="200" style="width: 140px; accent-color: var(--accent); cursor: pointer;">
+            <span id="distance-value" style="font-size: 0.78rem; color: var(--text-secondary); min-width: 30px; text-align: center;">200</span>
+        </div>
+        <div style="display: flex; align-items: center; gap: 12px;">
+            <span style="font-size: 0.78rem; color: var(--text-muted); width: 50px; white-space: nowrap;">🧲 التنافر</span>
+            <input type="range" id="charge-slider" min="100" max="5000" value="1500" style="width: 140px; accent-color: var(--accent); cursor: pointer;" dir="ltr">
+            <span id="charge-value" style="font-size: 0.78rem; color: var(--text-secondary); min-width: 30px; text-align: center;">1500</span>
+        </div>
     </div>
     <div id="graph-tooltip" style="
         position: absolute;
@@ -85,8 +92,8 @@ svg.call(zoom);
 svg.call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1));
 
 const simulation = d3.forceSimulation(nodes)
-    .force('link', d3.forceLink(links).id(d => d.id).distance(300))
-    .force('charge', d3.forceManyBody().strength(-3000).distanceMax(1500))
+    .force('link', d3.forceLink(links).id(d => d.id).distance(200))
+    .force('charge', d3.forceManyBody().strength(-1500).distanceMax(1200))
     .force('center', d3.forceCenter(width / 2, height / 2))
     .force('collision', d3.forceCollide(100).iterations(4))
     .force('x', d3.forceX(width / 2).strength(0.005))
@@ -183,11 +190,18 @@ function dragended(event, d) {
     d.fx = null; d.fy = null;
 }
 
-// Slider control
+// Slider controls
 document.getElementById('distance-slider').addEventListener('input', function() {
     const val = +this.value;
     document.getElementById('distance-value').textContent = val;
     simulation.force('link').distance(val);
+    simulation.alpha(0.5).restart();
+});
+
+document.getElementById('charge-slider').addEventListener('input', function() {
+    const val = +this.value;
+    document.getElementById('charge-value').textContent = val;
+    simulation.force('charge').strength(-val);
     simulation.alpha(0.5).restart();
 });
 </script>
