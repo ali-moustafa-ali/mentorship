@@ -80,12 +80,12 @@ svg.call(zoom);
 svg.call(zoom.transform, d3.zoomIdentity.translate(0, 0).scale(1));
 
 const simulation = d3.forceSimulation(nodes)
-    .force('link', d3.forceLink(links).id(d => d.id).distance(250))
-    .force('charge', d3.forceManyBody().strength(-1000).distanceMax(600))
+    .force('link', d3.forceLink(links).id(d => d.id).distance(400))
+    .force('charge', d3.forceManyBody().strength(-2000).distanceMax(1200))
     .force('center', d3.forceCenter(width / 2, height / 2))
-    .force('collision', d3.forceCollide(85).iterations(2))
-    .force('x', d3.forceX(width / 2).strength(0.015))
-    .force('y', d3.forceY(height / 2).strength(0.015));
+    .force('collision', d3.forceCollide(120).iterations(3))
+    .force('x', d3.forceX(width / 2).strength(0.008))
+    .force('y', d3.forceY(height / 2).strength(0.008));
 
 // Links — curved paths
 const link = g.append('g')
