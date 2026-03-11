@@ -329,9 +329,9 @@ class TopicController extends Controller
 
     // ─── Helpers ───
 
-    private function syncTags(Topic $topic, string $tagsString): void
+    private function syncTags(Topic $topic, ?string $tagsString = ''): void
     {
-        $tagNames = array_filter(array_map('trim', explode(',', $tagsString)));
+        $tagNames = array_filter(array_map('trim', explode(',', $tagsString ?? '')));
         $tagIds = [];
 
         foreach ($tagNames as $name) {
