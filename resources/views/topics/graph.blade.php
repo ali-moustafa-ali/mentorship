@@ -162,11 +162,15 @@ node.on('mouseover', function(event, d) {
 });
 
 simulation.on('tick', () => {
-    link.attr('d', d => {
+    link.attr('d', (d, i) => {
         const dx = d.target.x - d.source.x;
         const dy = d.target.y - d.source.y;
-        const dr = Math.sqrt(dx * dx + dy * dy) * 1.5;
-        return 'M' + d.source.x + ',' + d.source.y + 'A' + dr + ',' + dr + ' 0 0,1 ' + d.target.x + ',' + d.target.y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+        // Alternate curve direction & vary curvature so links fan out
+        const sweep = i % 2;
+        const curvature = 0.6 + (i % 3) * 0.25; // varies between 0.6, 0.85, 1.1
+        const dr = dist * curvature;
+        return 'M' + d.source.x + ',' + d.source.y + 'A' + dr + ',' + dr + ' 0 0,' + sweep + ' ' + d.target.x + ',' + d.target.y;
     });
     node.attr('transform', d => 'translate(' + d.x + ',' + d.y + ')');
 });
