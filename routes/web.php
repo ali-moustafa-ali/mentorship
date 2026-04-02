@@ -9,6 +9,7 @@ Route::get('/graph', [TopicController::class, 'graph'])->name('topics.graph');
 Route::get('/review', [TopicController::class, 'review'])->name('topics.review');
 Route::get('/api/topics', [TopicController::class, 'apiTopics'])->name('api.topics');
 Route::post('/upload-image', [TopicController::class, 'uploadImage'])->name('upload.image');
+Route::resource('learning-goals', \App\Http\Controllers\LearningGoalController::class)->except(['create', 'edit', 'show']);
 
 Route::resource('topics', TopicController::class)->except('index');
 

@@ -501,6 +501,7 @@
             border-top: 1px solid var(--border);
             margin: 24px 0;
         }
+        .topic-body img { max-width: 100%; height: auto; border-radius: 8px; margin: 16px 0; display: block; }
 
         /* Wiki links */
         .wiki-link {
@@ -1000,6 +1001,10 @@
                     <span class="nav-badge">{{ $reviewCount }}</span>
                 @endif
             </a>
+
+            <a href="{{ route('learning-goals.index') }}" class="{{ request()->routeIs('learning-goals.index') ? 'active' : '' }}">
+                <span class="nav-icon">🎯</span> الأهداف الشهرية
+            </a>
             
             <a href="{{ route('admin.index') }}" class="{{ request()->is('admin*') ? 'active' : '' }}">
                 <span class="nav-icon">🛡️</span> لوحة التحكم
@@ -1374,6 +1379,28 @@
                     initAutocomplete(ta);
                 }
 
+                // Intercept file drops on textarea natively
+                ta.addEventListener('drop', (e) => {
+                    if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
+                        const file = e.dataTransfer.files[0];
+                        if (file.type.startsWith('image/')) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.uploadImageHandler(file, div);
+                        }
+                    }
+                });
+                ta.addEventListener('paste', (e) => {
+                    if (e.clipboardData && e.clipboardData.files.length > 0) {
+                        const file = e.clipboardData.files[0];
+                        if (file.type.startsWith('image/')) {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            window.uploadImageHandler(file, div);
+                        }
+                    }
+                });
+
                 if (focus) setTimeout(() => ta.focus(), 50);
 
                 return div;
@@ -1529,17 +1556,21 @@
             });
 
             // --- Drag & Drop Image Upload ---
-            const uploadImage = async (file) => {
+            window.uploadImageHandler = async (file, targetDiv = null) => {
                 const formData = new FormData();
                 formData.append('image', file);
                 
                 // Visualization
                 const placeholderBlock = createBlockEl('![جاري الرفع...](https://via.placeholder.com/150?text=Uploading...)');
-                const addArea = editorEl.querySelector('.add-block-area');
-                if (addArea) {
-                    editorEl.insertBefore(placeholderBlock, addArea);
+                if (targetDiv) {
+                    targetDiv.after(placeholderBlock);
                 } else {
-                    editorEl.appendChild(placeholderBlock);
+                    const addArea = editorEl.querySelector('.add-block-area');
+                    if (addArea) {
+                        editorEl.insertBefore(placeholderBlock, addArea);
+                    } else {
+                        editorEl.appendChild(placeholderBlock);
+                    }
                 }
                 
                 try {
@@ -1582,7 +1613,7 @@
                 if (e.dataTransfer.files && e.dataTransfer.files[0]) {
                     const file = e.dataTransfer.files[0];
                     if (file.type.startsWith('image/')) {
-                        uploadImage(file);
+                        window.uploadImageHandler(file);
                     }
                 }
             });
@@ -1593,7 +1624,7 @@
                     const file = e.clipboardData.files[0];
                     if (file.type.startsWith('image/')) {
                         e.preventDefault();
-                        uploadImage(file);
+                        window.uploadImageHandler(file);
                     }
                 }
             });
