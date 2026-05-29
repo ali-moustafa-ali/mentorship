@@ -1,5 +1,3 @@
-version: '3.8'
-
 services:
   app:
     build:
@@ -20,15 +18,28 @@ services:
     image: nginx:alpine
     container_name: mentor_nginx
     restart: unless-stopped
-    ports:
-      - "8083:80"
     volumes:
       - ./:/var/www
       - ./docker/nginx/app.conf:/etc/nginx/conf.d/default.conf
-    networks:
-      - mentor_net
     depends_on:
       - app
+    networks:
+      - mentor_net
+      - coolify
+    labels:
+      - "traefik.enable=true"
+      - "traefik.docker.network=coolify"
+      - "traefik.http.routers.mentor-http.rule=Host(`mentor.aligm.cloud`)"
+      - "traefik.http.routers.mentor-http.entrypoints=http"
+      - "traefik.http.routers.mentor-http.middlewares=mentor-redirect"
+      - "traefik.http.routers.mentor.rule=Host(`mentor.aligm.cloud`)"
+      - "traefik.http.routers.mentor.entrypoints=https"
+      - "traefik.http.routers.mentor.tls=true"
+      - "traefik.http.routers.mentor.tls.certresolver=letsencrypt"
+      - "traefik.http.routers.mentor.service=mentor"
+      - "traefik.http.middlewares.mentor-redirect.redirectscheme.scheme=https"
+      - "traefik.http.middlewares.mentor-redirect.redirectscheme.permanent=true"
+      - "traefik.http.services.mentor.loadbalancer.server.port=80"
 
   db:
     image: mysql:8.0
@@ -46,9 +57,10 @@ services:
 networks:
   mentor_net:
     driver: bridge
+  coolify:
+    external: true
 
 volumes:
   dbdata:
     external: true
     name: mentor_dbdata
-

@@ -12,11 +12,14 @@ jobs:
     steps:
       - name: Deploy via SSH
         uses: appleboy/ssh-action@v1.2.0
+        env:
+          GH_REPO_URL: "https://${{ github.actor }}:${{ secrets.GITHUB_TOKEN }}@github.com/${{ github.repository }}.git"
         with:
           host: ${{ secrets.SERVER_HOST }}
           username: ${{ secrets.SERVER_USER }}
-          password: ${{ secrets.SERVER_PASSWORD }}
+          key: ${{ secrets.VPS_SSH_KEY }}
           port: 22
+          envs: GH_REPO_URL
           timeout: 120s
           command_timeout: 1800s
           script: |
@@ -24,7 +27,9 @@ jobs:
 
             cd /var/www/mentor
             git config --global --add safe.directory /var/www/mentor || true
-            git pull origin main
+            git remote set-url origin "$GH_REPO_URL" 2>/dev/null || true
+            git fetch origin main
+            git reset --hard origin/main
 
             docker volume inspect mentor_dbdata >/dev/null 2>&1 || docker volume create mentor_dbdata >/dev/null
 
